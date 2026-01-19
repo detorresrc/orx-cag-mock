@@ -14,7 +14,17 @@ const options = {
     servers: [
       {
         url: 'http://localhost:8080',
-        description: 'Development server'
+        description: 'Local development server'
+      },
+      {
+        url: 'http://{host}:8080',
+        description: 'Network accessible server',
+        variables: {
+          host: {
+            default: 'localhost',
+            description: 'Your machine IP address or hostname'
+          }
+        }
       }
     ],
     tags: [

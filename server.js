@@ -6,6 +6,7 @@ const data = require('./data');
 
 const app = express();
 const PORT = 8080;
+const HOST = '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
@@ -482,10 +483,13 @@ app.post('/api/cag/assign', (req, res) => {
   res.status(200).json({ message: 'CAGs assigned successfully' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Mock API server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Mock API server running on http://${HOST}:${PORT}`);
+  console.log(`Local access: http://localhost:${PORT}`);
   console.log(`\nSwagger UI available at: http://localhost:${PORT}/api-docs`);
   console.log(`OpenAPI JSON spec at: http://localhost:${PORT}/api-docs.json`);
+  console.log('\nServer is accessible from all network interfaces');
+  console.log('Use your machine\'s IP address to access from other devices');
   console.log('\nAvailable endpoints:');
   console.log('GET  /api/client/activeClientList');
   console.log('GET  /api/client/contractList?clientReferenceId=CRI001&clientName=ABC');
