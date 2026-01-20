@@ -32,27 +32,26 @@ The Swagger UI provides an interactive interface to test all API endpoints.
 ## API Endpoints
 
 ### 1. Get Active Clients
-- **URL**: `GET /api/client/activeClientList`
-- **Response**: List of active clients
+- **URL**: `GET /api/clients/activeClientList`
+- **Response**: List of active clients with UUID identifiers
 
 ### 2. Get Active Contracts
-- **URL**: `GET /api/client/contractList?clientReferenceId=CRI001&clientName=ABC`
+- **URL**: `GET /api/clients/contractList?clientId=04a3832e-0b8a-40bc-8626-392cf860835d`
 - **Query Params**: 
-  - `clientReferenceId` (required)
-  - `clientName` (required)
+  - `clientId` (required, UUID format)
 - **Response**: List of contracts for the client
 
 ### 3. Get Operation Units
-- **URL**: `GET /api/client/operationUnitList?contractId=CON001`
+- **URL**: `GET /api/clients/activeOperationUnitList?contractInternalId=571027ad-84fe-40bc-b555-8c3dac5d56ec`
 - **Query Params**: 
-  - `contractId` (required)
+  - `contractInternalId` (required, UUID format)
 - **Response**: List of operation units for the contract
 
 ### 4. Get Assigned CAGs (Paginated)
-- **URL**: `GET /api/cag/assignedCAGList?operationUnitId=OU001&size=5&page=0`
+- **URL**: `GET /api/cag/assignedCAGList?operationUnitInternalId=e559a889-ddb2-4004-9c30-3be455cdbdd1&size=10&page=0`
 - **Query Params**: 
-  - `operationUnitId` (required)
-  - `size` (optional, default: 5)
+  - `operationUnitInternalId` (required, UUID format)
+  - `size` (optional, default: 10)
   - `page` (optional, default: 0)
 - **Response**: Paginated list of assigned CAGs with total count
 
@@ -66,7 +65,7 @@ The Swagger UI provides an interactive interface to test all API endpoints.
 - **Body**:
 ```json
 {
-  "ouCagIds": ["OUCAG001", "OUCAG002"],
+  "ouCagIds": ["OUCAG001", "OUCAG004"],
   "status": "INACTIVE"
 }
 ```
@@ -77,8 +76,9 @@ The Swagger UI provides an interactive interface to test all API endpoints.
 - **Body**:
 ```json
 {
-  "operationUnitId": "OU001",
-  "cagIds": ["CAG001", "CAG002"]
+  "operationUnitInternalId": "e559a889-ddb2-4004-9c30-3be455cdbdd1",
+  "assignmentType": "Carrier",
+  "cagIds": ["CAG002", "CAG003"]
 }
 ```
 - **Response**: 200 status code

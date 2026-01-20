@@ -26,7 +26,7 @@ app.get('/api-docs.json', (req, res) => {
 
 /**
  * @swagger
- * /api/client/activeClientList:
+ * /api/clients/activeClientList:
  *   get:
  *     summary: Get all active clients
  *     tags: [Client]
@@ -43,36 +43,35 @@ app.get('/api-docs.json', (req, res) => {
  *                   items:
  *                     type: object
  *                     properties:
+ *                       clientId:
+ *                         type: string
+ *                         format: uuid
+ *                         example: 01b92b7e-f570-4519-bc55-853132a9d3a7
  *                       clientName:
  *                         type: string
- *                         example: ABC
+ *                         example: Acmsad Health
  *                       clientReferenceId:
  *                         type: string
- *                         example: CRI001
+ *                         example: ACMSAD
  */
-app.get('/api/client/activeClientList', (req, res) => {
+app.get('/api/clients/activeClientList', (req, res) => {
   res.json({ clientList: data.clients });
 });
 
 /**
  * @swagger
- * /api/client/contractList:
+ * /api/clients/contractList:
  *   get:
- *     summary: Get active contracts by client reference ID and name
+ *     summary: Get active contracts by client ID
  *     tags: [Client]
  *     parameters:
  *       - in: query
- *         name: clientReferenceId
+ *         name: clientId
  *         required: true
  *         schema:
  *           type: string
- *         example: CRI001
- *       - in: query
- *         name: clientName
- *         required: true
- *         schema:
- *           type: string
- *         example: ABC
+ *           format: uuid
+ *         example: 04a3832e-0b8a-40bc-8626-392cf860835d
  *     responses:
  *       200:
  *         description: List of contracts for the specified client
@@ -86,45 +85,47 @@ app.get('/api/client/activeClientList', (req, res) => {
  *                   items:
  *                     type: object
  *                     properties:
+ *                       contractInternalId:
+ *                         type: string
+ *                         format: uuid
+ *                         example: 571027ad-84fe-40bc-b555-8c3dac5d56ec
  *                       contractId:
  *                         type: string
- *                         example: CON001
+ *                         example: CON003
  *                       effectiveDate:
  *                         type: string
  *                         format: date
- *                         example: 2023-01-01
- *                       terminationDate:
+ *                         example: 2025-01-01
+ *                       terminateDate:
  *                         type: string
  *                         format: date
  *                         nullable: true
- *                         example: 2024-12-31
+ *                         example: 2026-12-31
  */
-app.get('/api/client/contractList', (req, res) => {
-  const { clientReferenceId, clientName } = req.query;
+app.get('/api/clients/contractList', (req, res) => {
+  const { clientId } = req.query;
   
   const contracts = data.contracts
-    .filter(contract => 
-      contract.clientReferenceId === clientReferenceId && 
-      contract.clientName === clientName
-    )
-    .map(({ clientReferenceId, clientName, ...rest }) => rest);
+    .filter(contract => contract.clientId === clientId)
+    .map(({ clientId, ...rest }) => rest);
   
   res.json({ contractList: contracts });
 });
 
 /**
  * @swagger
- * /api/client/operationUnitList:
+ * /api/clients/activeOperationUnitList:
  *   get:
- *     summary: Get active operation units by contract ID
+ *     summary: Get active operation units by contract internal ID
  *     tags: [Client]
  *     parameters:
  *       - in: query
- *         name: contractId
+ *         name: contractInternalId
  *         required: true
  *         schema:
  *           type: string
- *         example: CON001
+ *           format: uuid
+ *         example: 571027ad-84fe-40bc-b555-8c3dac5d56ec
  *     responses:
  *       200:
  *         description: List of operation units for the specified contract
@@ -138,19 +139,23 @@ app.get('/api/client/contractList', (req, res) => {
  *                   items:
  *                     type: object
  *                     properties:
+ *                       operationUnitInternalId:
+ *                         type: string
+ *                         format: uuid
+ *                         example: e417a6ee-aaec-4c24-a417-e7e5401bfdd7
  *                       operationUnitId:
  *                         type: string
- *                         example: OU001
+ *                         example: OU004
  *                       operationUnitName:
  *                         type: string
- *                         example: Manufacturing
+ *                         example: OU - West Region
  */
-app.get('/api/client/operationUnitList', (req, res) => {
-  const { contractId } = req.query;
+app.get('/api/clients/activeOperationUnitList', (req, res) => {
+  const { contractInternalId } = req.query;
   
   const operationUnits = data.operationUnits
-    .filter(ou => ou.contractId === contractId)
-    .map(({ contractId, ...rest }) => rest);
+    .filter(ou => ou.contractInternalId === contractInternalId)
+    .map(({ contractInternalId, ...rest }) => rest);
   
   res.json({ operationUnitList: operationUnits });
 });
@@ -159,21 +164,22 @@ app.get('/api/client/operationUnitList', (req, res) => {
  * @swagger
  * /api/cag/assignedCAGList:
  *   get:
- *     summary: Get assigned CAGs by operation unit ID with pagination
+ *     summary: Get assigned CAGs by operation unit internal ID with pagination
  *     tags: [CAG]
  *     parameters:
  *       - in: query
- *         name: operationUnitId
+ *         name: operationUnitInternalId
  *         required: true
  *         schema:
  *           type: string
- *         example: OU001
+ *           format: uuid
+ *         example: e559a889-ddb2-4004-9c30-3be455cdbdd1
  *       - in: query
  *         name: size
  *         schema:
  *           type: integer
- *           default: 5
- *         example: 5
+ *           default: 10
+ *         example: 10
  *       - in: query
  *         name: page
  *         schema:
@@ -195,46 +201,63 @@ app.get('/api/client/operationUnitList', (req, res) => {
  *                     properties:
  *                       ouCagId:
  *                         type: string
+ *                         example: OUCAG001
  *                       operationUnitId:
  *                         type: string
+ *                         example: OU006
+ *                       operationUnitInternalId:
+ *                         type: string
+ *                         format: uuid
+ *                         example: e559a889-ddb2-4004-9c30-3be455cdbdd1
  *                       cagId:
  *                         type: string
- *                       startDate:
+ *                         example: CAG001
+ *                       effectiveStartDate:
  *                         type: string
  *                         format: date
- *                       endDate:
+ *                         example: 2023-01-01
+ *                       effectiveEndDate:
  *                         type: string
  *                         format: date
  *                         nullable: true
- *                       ouCagStatus:
+ *                       assigmentStatus:
  *                         type: string
+ *                         example: ACTIVE
  *                       carrierId:
  *                         type: string
- *                       assignmentLevel:
- *                         type: string
- *                         enum: [Carrier, Account, Group]
+ *                         example: CAR001
  *                       carrierName:
  *                         type: string
+ *                         example: United Health Carrier
+ *                       assignmentLevel:
+ *                         type: string
+ *                         enum: [CARRIER, ACCOUNT, GROUP]
+ *                         example: CARRIER
  *                       accountId:
  *                         type: string
+ *                         example: ACC001
  *                       accountName:
  *                         type: string
+ *                         example: Optum Rx Account
  *                       groupId:
  *                         type: string
+ *                         example: GRP001
  *                       groupName:
  *                         type: string
+ *                         example: Optum Group A
  *                 count:
  *                   type: integer
  *                   description: Total count of CAGs
+ *                   example: 2
  */
 app.get('/api/cag/assignedCAGList', (req, res) => {
-  const { operationUnitId, size = 5, page = 0 } = req.query;
+  const { operationUnitInternalId, size = 10, page = 0 } = req.query;
   
   const pageSize = parseInt(size);
   const pageNum = parseInt(page);
   
   const filteredCAGs = data.assignedCAGs.filter(
-    cag => cag.operationUnitId === operationUnitId
+    cag => cag.operationUnitInternalId === operationUnitInternalId
   );
   
   const startIndex = pageNum * pageSize;
@@ -410,7 +433,7 @@ app.put('/api/cag/updateStatus', (req, res) => {
   ouCagIds.forEach(ouCagId => {
     const cag = data.assignedCAGs.find(c => c.ouCagId === ouCagId);
     if (cag) {
-      cag.ouCagStatus = status;
+      cag.assigmentStatus = status;
     }
   });
   
@@ -430,17 +453,23 @@ app.put('/api/cag/updateStatus', (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - operationUnitId
+ *               - operationUnitInternalId
+ *               - assignmentType
  *               - cagIds
  *             properties:
- *               operationUnitId:
+ *               operationUnitInternalId:
  *                 type: string
- *                 example: OU001
+ *                 format: uuid
+ *                 example: e559a889-ddb2-4004-9c30-3be455cdbdd1
+ *               assignmentType:
+ *                 type: string
+ *                 enum: [Carrier, Account, Group]
+ *                 example: Carrier
  *               cagIds:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["CAG001", "CAG002", "CAG003"]
+ *                 example: ["CAG002", "CAG003"]
  *     responses:
  *       200:
  *         description: CAGs assigned successfully
@@ -455,11 +484,14 @@ app.put('/api/cag/updateStatus', (req, res) => {
  *         description: Invalid request body
  */
 app.post('/api/cag/assign', (req, res) => {
-  const { operationUnitId, cagIds } = req.body;
+  const { operationUnitInternalId, assignmentType, cagIds } = req.body;
   
-  if (!operationUnitId || !cagIds || !Array.isArray(cagIds)) {
+  if (!operationUnitInternalId || !assignmentType || !cagIds || !Array.isArray(cagIds)) {
     return res.status(400).json({ error: 'Invalid request body' });
   }
+  
+  // Find the operation unit to get its ID
+  const operationUnit = data.operationUnits.find(ou => ou.operationUnitInternalId === operationUnitInternalId);
   
   cagIds.forEach((cagId, index) => {
     const newOuCagId = `OUCAG${String(data.assignedCAGs.length + index + 1).padStart(3, '0')}`;
@@ -467,18 +499,19 @@ app.post('/api/cag/assign', (req, res) => {
     
     const newAssignment = {
       ouCagId: newOuCagId,
-      operationUnitId: operationUnitId,
+      operationUnitId: operationUnit?.operationUnitId || "OU999",
+      operationUnitInternalId: operationUnitInternalId,
       cagId: cagId,
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: null,
-      ouCagStatus: "ACTIVE",
+      effectiveStartDate: new Date().toISOString().split('T')[0],
+      effectiveEndDate: null,
+      assigmentStatus: "ACTIVE",
       carrierId: cagMapping?.carrierId || "CAR999",
-      assignmentLevel: "Carrier",
-      carrierName: cagMapping?.carrierName || "Unknown",
-      accountId: cagMapping?.accountId || "AC999",
-      accountName: cagMapping?.accountName || "Unknown",
-      groupId: cagMapping?.groupId || "GR999",
-      groupName: cagMapping?.groupName || "Unknown"
+      carrierName: cagMapping?.carrierName || "Unknown Carrier",
+      assignmentLevel: assignmentType.toUpperCase(),
+      accountId: cagMapping?.accountId || "ACC999",
+      accountName: cagMapping?.accountName || "Unknown Account",
+      groupId: cagMapping?.groupId || "GRP999",
+      groupName: cagMapping?.groupName || "Unknown Group"
     };
     
     data.assignedCAGs.push(newAssignment);
@@ -495,10 +528,10 @@ app.listen(PORT, HOST, () => {
   console.log('\nServer is accessible from all network interfaces');
   console.log('Use your machine\'s IP address to access from other devices');
   console.log('\nAvailable endpoints:');
-  console.log('GET  /api/client/activeClientList');
-  console.log('GET  /api/client/contractList?clientReferenceId=CRI001&clientName=ABC');
-  console.log('GET  /api/client/operationUnitList?contractId=CON001');
-  console.log('GET  /api/cag/assignedCAGList?operationUnitId=OU001&size=5&page=0');
+  console.log('GET  /api/clients/activeClientList');
+  console.log('GET  /api/clients/contractList?clientId=04a3832e-0b8a-40bc-8626-392cf860835d');
+  console.log('GET  /api/clients/activeOperationUnitList?contractInternalId=571027ad-84fe-40bc-b555-8c3dac5d56ec');
+  console.log('GET  /api/cag/assignedCAGList?operationUnitInternalId=e559a889-ddb2-4004-9c30-3be455cdbdd1&size=10&page=0');
   console.log('GET  /api/cag/allListByConditions?assignmentLevel=carrier&carrierId=CR001...');
   console.log('PUT  /api/cag/updateStatus');
   console.log('POST /api/cag/assign');
